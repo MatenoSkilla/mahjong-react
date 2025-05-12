@@ -46,7 +46,6 @@ function App() {
             <img src={`img/${tile}.gif`} alt={tile} />
           </div>
         ))}
-        ))}
       </div>
     </div>
   );
