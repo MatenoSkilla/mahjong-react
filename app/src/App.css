@@ -40,3 +40,15 @@
 .read-the-docs {
   color: #888;
 }
+
+.tiles {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tile img {
+  width: 40px;
+  height: auto;
+}
