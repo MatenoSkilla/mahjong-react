@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import Tile from './components/Tile';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 import './App.css';
 
 function App() {
@@ -18,9 +16,20 @@ function App() {
   };
 
   const [hand, setHand] = useState([]);
+  const [selectedTiles, setSelectedTiles] = useState([]);
+  
   const dealTiles = () => {
     const shuffledTiles = shuffle([...tileOrder, ...tileOrder, ...tileOrder, ...tileOrder]);
     setHand(shuffledTiles.slice(0, 13));
+    setSelectedTiles([]);
+  };
+
+  const toggleSelect = (index) => {
+    setSelectedTiles((prev) =>
+      prev.includes(index)
+        ? prev.filter((i) => i !== index)
+        : [...prev, index]
+    );
   };
 
   return (
@@ -28,10 +37,15 @@ function App() {
       <h1>麻雀アプリ</h1>
       <button onClick={dealTiles}>配牌</button>
       <div className="tiles">
-        {hand.length > 0 && hand.map((tile, index) => (
-          <div key={index} className="tile">
+        {hand.map((tile, index) => (
+          <div
+            key={index}
+            className={`tile ${selectedTiles.includes(index) ? 'selected' : ''}`}
+            onClick={() => toggleSelect(index)}
+          >
             <img src={`img/${tile}.gif`} alt={tile} />
           </div>
+        ))}
         ))}
       </div>
     </div>
