@@ -63,4 +63,9 @@
 
 .tile.selected {
   border: 2px solid red;
+  box-sizing: border-box;
+}
+
+.discarded {
+  margin-top: 20px;
 }

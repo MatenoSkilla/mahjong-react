@@ -16,21 +16,40 @@ function App() {
   };
 
   const [hand, setHand] = useState([]);
-  const [selectedTiles, setSelectedTiles] = useState([]);
+  const [selectedTileIndex, setSelectedTileIndex] = useState([null]);
+  const [discardedTiles, setDiscardedTiles] = useState([]);
   
   const dealTiles = () => {
     const shuffledTiles = shuffle([...tileOrder, ...tileOrder, ...tileOrder, ...tileOrder]);
-    setHand(shuffledTiles.slice(0, 13));
-    setSelectedTiles([]);
+    const dealt = shuffledTiles.slice(0, 13);
+    const sorted = dealt.sort((a,b) => tileOrder.indexOf(a) - tileOrder.indexOf(b));
+    setHand(sorted);
   };
 
-  const toggleSelect = (index) => {
-    setSelectedTiles((prev) =>
-      prev.includes(index)
-        ? prev.filter((i) => i !== index)
-        : [...prev, index]
-    );
-  };
+  // const sortHand = (hand) => {
+  //   return [...hand].sort((a,b) => tileOrder.indexOf(a) - tileOrder.indexOf(b));
+  // };
+
+  // const toggleSelect = (index) => {
+  //   setSelectedIndex((prev) =>
+  //     prev.includes(index)
+  //       ? prev.filter((i) => i !== index)
+  //       : [...prev, index]
+  //   );
+  // };
+
+    const onTileClick = (index) => {
+      // setSelectedIndex(index === selectedIndex ? null : index)
+      if (selectedTileIndex === index) {
+        const tileToDiscard = hand[index];
+        const newHand = hand.filter((_, i) => i !== index);
+        setHand(newHand);
+        setSelectedTileIndex(null);
+        setDiscardedTiles([...discardedTiles, tileToDiscard]);
+      } else {
+        setSelectedTileIndex(index);
+      }
+    };
 
   return (
     <div className="app">
@@ -40,12 +59,24 @@ function App() {
         {hand.map((tile, index) => (
           <div
             key={index}
-            className={`tile ${selectedTiles.includes(index) ? 'selected' : ''}`}
-            onClick={() => toggleSelect(index)}
+            className={`tile ${selectedTileIndex === index ? 'selected' : ''}`}
+            onClick={() => onTileClick(index)}
           >
             <img src={`img/${tile}.gif`} alt={tile} />
           </div>
         ))}
+      </div>
+
+      {/* ▼ここに捨て牌を表示 */}
+      <div className="discarded">
+        <h2>捨て牌</h2>
+        <div className="tiles">
+          {discardedTiles.map((tile, index) => (
+            <div key={index} className="tile">
+              <img src={`img/${tile}.gif`} alt={tile} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
