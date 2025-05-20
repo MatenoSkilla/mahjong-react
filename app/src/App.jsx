@@ -11,24 +11,66 @@ function App() {
     'E', 'S', 'W', 'N', 'Pai', 'Hua', 'Chun'
   ];
 
+  const createDeck = () => {
+    const deck = [];
+    tileOrder.forEach(tile => {
+      for (let i = 0; i < 4; i++) deck.push(tile);
+    });
+    return deck;
+  };
+
   const shuffle = (array) => {
     return array.sort(() => Math.random() - 0.5);
   };
 
+  // 状態
+  const [deck, setDeck] = useState(createDeck());
   const [hand, setHand] = useState([]);
-  const [selectedTileIndex, setSelectedTileIndex] = useState([null]);
-  const [discardedTiles, setDiscardedTiles] = useState([]);
+  const [drawnTile, setDrawnTile] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState([null]);
+  const [discarded, setDiscarded] = useState([]);
+
+  // ツモ処理
+  const drawTile = () => {
+      if (deck.length === 0 || hand.length >= 14) return;
+
+      const nextTile = deck[0];
+      setDrawnTile(nextTile);
+      setDeck(deck.slice(1));
+    };
+
+  // 捨て牌処理
+  const discardTile = () => {
+    if (selectedIndex === null) return;
+
+    let newHand = [...hand];
+    let discardedTile = null;
+
+    if (selectedIndex === "drawn") {
+      discardedTile = drawnTile;
+      setDrawnTile(null);
+    } else {
+      discardedTile = newHand.splice(selectedIndex, 1)[0];
+    }
+
+    setHand(sortTiles(newHand));
+    setDiscarded([...discarded, discardedTile]);
+    setSelectedIndex(null);
+  };
   
   const dealTiles = () => {
-    const shuffledTiles = shuffle([...tileOrder, ...tileOrder, ...tileOrder, ...tileOrder]);
-    const dealt = shuffledTiles.slice(0, 13);
-    const sorted = dealt.sort((a,b) => tileOrder.indexOf(a) - tileOrder.indexOf(b));
-    setHand(sorted);
+    const shuffled = shuffle(deck);
+    const newHand = shuffled.slice(0, 13);
+    const newDeck = shuffled.slice(13);
+    setHand(sortTiles(newHand));
+    setDiscarded([]);
+    setDeck(newDeck);
+    setSelectedIndex(null);
   };
 
-  // const sortHand = (hand) => {
-  //   return [...hand].sort((a,b) => tileOrder.indexOf(a) - tileOrder.indexOf(b));
-  // };
+  const sortTiles = (tiles) => {
+    return [...tiles].sort((a,b) => tileOrder.indexOf(a) - tileOrder.indexOf(b));
+  };
 
   // const toggleSelect = (index) => {
   //   setSelectedIndex((prev) =>
@@ -38,16 +80,19 @@ function App() {
   //   );
   // };
 
-    const onTileClick = (index) => {
-      // setSelectedIndex(index === selectedIndex ? null : index)
-      if (selectedTileIndex === index) {
+    // 牌クリック処理
+    const handleTileClick = (index) => {
+      setSelectedIndex((prev) => (prev === index ? null : index));
+      setSelectedIndex(index === selectedIndex ? null : index)
+      if (selectedIndex === index) {
         const tileToDiscard = hand[index];
-        const newHand = hand.filter((_, i) => i !== index);
+        const newHand = [...hand];
+        newHand.splice(index, 1);
         setHand(newHand);
-        setSelectedTileIndex(null);
-        setDiscardedTiles([...discardedTiles, tileToDiscard]);
+        setSelectedIndex(null);
+        setDiscarded([...discarded, tileToDiscard]);
       } else {
-        setSelectedTileIndex(index);
+        setSelectedIndex(index);
       }
     };
 
@@ -55,23 +100,34 @@ function App() {
     <div className="app">
       <h1>麻雀アプリ</h1>
       <button onClick={dealTiles}>配牌</button>
+      <p>山の残り枚数: {deck.length}</p>
       <div className="tiles">
         {hand.map((tile, index) => (
-          <div
+          <Tile 
             key={index}
-            className={`tile ${selectedTileIndex === index ? 'selected' : ''}`}
-            onClick={() => onTileClick(index)}
-          >
-            <img src={`img/${tile}.gif`} alt={tile} />
-          </div>
+            tile={tile}
+            selected={selectedIndex === index}
+            onClick={() => handleTileClick(index)}
+          />
         ))}
+        {drawnTile && (
+          <Tile 
+            key="drawn"
+            tile={drawnTile}
+            selected={selectedIndex === "drawn"}
+            onClick={() => handleTileClick("drawn")}
+            className="drawn-tile"
+          />
+        )}
       </div>
+
+      <button onClick={drawTile} disabled={hand.length >= 14}>ツモ</button>
 
       {/* ▼ここに捨て牌を表示 */}
       <div className="discarded">
         <h2>捨て牌</h2>
         <div className="tiles">
-          {discardedTiles.map((tile, index) => (
+          {discarded.map((tile, index) => (
             <div key={index} className="tile">
               <img src={`img/${tile}.gif`} alt={tile} />
             </div>

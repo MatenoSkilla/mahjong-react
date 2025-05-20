@@ -56,16 +56,24 @@
   transition: border 0.2s;
 }
 
-.tile img {
+.tile-img {
   width: 40px;
+  margin: 2px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
   height: auto;
 }
 
-.tile.selected {
+.tile-img.selected {
   border: 2px solid red;
+  border-radius: 4px;
   box-sizing: border-box;
 }
 
 .discarded {
   margin-top: 20px;
+}
+
+.drawn-tile {
+  margin-left: 20px;
 }

@@ -1,14 +1,17 @@
 import React from 'react';
 
 // Tile コンポーネント
-function Tile({ tile }) {
+function Tile({ tile, selected, onClick, className = "" }) {
     // 画像パスを動的に決定
-    const tileImage = `/img/${tile}.gif`;
+    const tileImage = `${import.meta.env.BASE_URL}img/${tile}.gif`;
 
     return (
-    <div className="tile">
-      <img src={tileImage} alt={tile} className="tile-img" />
-    </div>
+    <img 
+      src={tileImage} 
+      alt={tile} 
+      className={`tile-img ${selected ? "selected" : ""} ${className}`}
+      onClick={onClick}
+    /> 
   );
 }
 
