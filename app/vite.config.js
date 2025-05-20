@@ -6,7 +6,7 @@ export default defineConfig({
   base: '/mahjong-react/',
   plugins: [react()],
   server: {
-    host: '0.0.0.0',
-    port: 5173
+    host: true,
+    allowedHosts: ['5173-matenoskill-mahjongreac-t6kbmcqkamq.ws-us118.gitpod.io']
   }
 })
