@@ -11,6 +11,7 @@ function App() {
     'E', 'S', 'W', 'N', 'Pai', 'Hua', 'Chun'
   ];
 
+  // 山牌生成
   const createDeck = () => {
     const deck = [];
     tileOrder.forEach(tile => {
@@ -19,80 +20,96 @@ function App() {
     return deck;
   };
 
+  // 山シャッフル
   const shuffle = (array) => {
     return array.sort(() => Math.random() - 0.5);
   };
 
   // 状態
   const [deck, setDeck] = useState(createDeck());
-  const [hand, setHand] = useState([]);
-  const [drawnTile, setDrawnTile] = useState(null);
-  const [selectedIndex, setSelectedIndex] = useState([null]);
-  const [discarded, setDiscarded] = useState([]);
+  const [playerState, setPlayerState] = useState({
+    hand: [],
+    drawnTile: null,
+    selectedIndex: null,
+    discarded: []
+  });
 
-  // ツモ処理
-  const drawTile = () => {
-      if (deck.length === 0 || hand.length >= 14) return;
-
-      const nextTile = deck[0];
-      setDrawnTile(nextTile);
-      setDeck(deck.slice(1));
-    };
-
-  // 捨て牌処理
-  const discardTile = () => {
-    if (selectedIndex === null) return;
-
-    let newHand = [...hand];
-    let discardedTile = null;
-
-    if (selectedIndex === "drawn") {
-      discardedTile = drawnTile;
-      setDrawnTile(null);
-    } else {
-      discardedTile = newHand.splice(selectedIndex, 1)[0];
-    }
-
-    setHand(sortTiles(newHand));
-    setDiscarded([...discarded, discardedTile]);
-    setSelectedIndex(null);
-  };
-  
-  const dealTiles = () => {
-    const shuffled = shuffle(deck);
-    const newHand = shuffled.slice(0, 13);
-    const newDeck = shuffled.slice(13);
-    setHand(sortTiles(newHand));
-    setDiscarded([]);
-    setDeck(newDeck);
-    setSelectedIndex(null);
-  };
-
+  // 手牌並び替え
   const sortTiles = (tiles) => {
     return [...tiles].sort((a,b) => tileOrder.indexOf(a) - tileOrder.indexOf(b));
   };
 
-  // const toggleSelect = (index) => {
-  //   setSelectedIndex((prev) =>
-  //     prev.includes(index)
-  //       ? prev.filter((i) => i !== index)
-  //       : [...prev, index]
-  //   );
-  // };
+  // 手牌分配
+  const dealTiles = () => {
+    const freshDeck = shuffle(createDeck());
+    const newHand = freshDeck.slice(0, 13);
+    const newDeck = freshDeck.slice(13);
+
+    setDeck(newDeck);
+    setPlayerState({
+      hand: sortTiles(newHand),
+      drawnTile: null,
+      selectedIndex: null,
+      discarded: []
+    });
+  };
+
+  // ツモ処理
+  const drawTile = () => {
+      if (deck.length === 0 || playerState.hand.length >= 14) return;
+
+      const nextTile = deck[0];
+      // setDrawnTile(nextTile);
+      setPlayerState(prev => ({
+        ...prev,
+        drawnTile: nextTile
+      }));
+      setDeck(deck.slice(1));
+    };
 
     // 牌クリック処理
     const handleTileClick = (index) => {
-      setSelectedIndex((prev) => (prev === index ? null : index));
-      setSelectedIndex(index === selectedIndex ? null : index)
-      if (selectedIndex === index) {
-        const tileToDiscard = hand[index];
-        const newHand = [...hand];
-        newHand.splice(index, 1);
-        setHand(newHand);
-        setSelectedIndex(null);
-        setDiscarded([...discarded, tileToDiscard]);
+      // 打牌制限
+      //if (playerState.hand.length + (playerState.drawnTile ? 1 : 0) <= 13) return;
+
+      if (playerState.selectedIndex === index) {
+        const newDiscarded = [...playerState.discarded];
+        let newHand = [...playerState.hand];
+        let tileToDiscarded = null;
+
+        if (index === "drawn") {
+          // ツモ牌を打牌
+          tileToDiscarded = playerState.drawnTile;
+          newDiscarded.push(tileToDiscarded);
+          setPlayerState(prev => ({
+            ...prev,
+            drawnTile: null,
+            selectedIndex: null,
+            discarded: newDiscarded
+          }));
+        } else {
+          // 手牌から打牌
+          tileToDiscarded = newHand.splice(index, 1)[0];
+          newDiscarded.push(tileToDiscarded);
+          const updatedHand = [...newHand];
+
+          if (playerState.drawnTile) {
+            updatedHand.push(playerState.drawnTile);
+          }
+
+        setPlayerState(prev => ({
+          ...prev,
+          hand: sortTiles(updatedHand),
+          drawnTile: null,
+          selectedIndex: null,
+          discarded: newDiscarded
+        }));
+      }
       } else {
-        setSelectedIndex(index);
+        setPlayerState(prev => ({
+          ...prev,
+          selectedIndex: index
+        }));
       }
     };
 
@@ -102,32 +119,36 @@ function App() {
       <button onClick={dealTiles}>配牌</button>
       <p>山の残り枚数: {deck.length}</p>
       <div className="tiles">
-        {hand.map((tile, index) => (
+        {playerState.hand.map((tile, index) => (
           <Tile 
             key={index}
             tile={tile}
-            selected={selectedIndex === index}
+            selected={playerState.selectedIndex === index}
             onClick={() => handleTileClick(index)}
           />
         ))}
-        {drawnTile && (
+        {playerState.drawnTile && (
           <Tile 
             key="drawn"
-            tile={drawnTile}
-            selected={selectedIndex === "drawn"}
+            tile={playerState.drawnTile}
+            selected={playerState.selectedIndex === "drawn"}
             onClick={() => handleTileClick("drawn")}
             className="drawn-tile"
           />
         )}
       </div>
 
-      <button onClick={drawTile} disabled={hand.length >= 14}>ツモ</button>
+      <button 
+        onClick={drawTile} 
+        disabled={playerState.hand.length >= 14 || playerState.drawnTile !== null}>
+        ツモ
+      </button>
 
       {/* ▼ここに捨て牌を表示 */}
       <div className="discarded">
         <h2>捨て牌</h2>
         <div className="tiles">
-          {discarded.map((tile, index) => (
+          {playerState.discarded.map((tile, index) => (
             <div key={index} className="tile">
               <img src={`img/${tile}.gif`} alt={tile} />
             </div>
