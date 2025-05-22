@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Tile from './components/Tile';
+import HandArea from './components/HandArea';
 import './App.css';
 
 function App() {
@@ -118,25 +119,12 @@ function App() {
       <h1>麻雀アプリ</h1>
       <button onClick={dealTiles}>配牌</button>
       <p>山の残り枚数: {deck.length}</p>
-      <div className="tiles">
-        {playerState.hand.map((tile, index) => (
-          <Tile 
-            key={index}
-            tile={tile}
-            selected={playerState.selectedIndex === index}
-            onClick={() => handleTileClick(index)}
-          />
-        ))}
-        {playerState.drawnTile && (
-          <Tile 
-            key="drawn"
-            tile={playerState.drawnTile}
-            selected={playerState.selectedIndex === "drawn"}
-            onClick={() => handleTileClick("drawn")}
-            className="drawn-tile"
-          />
-        )}
-      </div>
+      <HandArea
+        hand={playerState.hand}
+        drawnTile={playerState.drawnTile}
+        selectedIndex={playerState.selectedIndex}
+        onTileClick={handleTileClick}
+      />
 
       <button 
         onClick={drawTile} 
