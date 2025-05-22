@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Tile from './components/Tile';
 import HandArea from './components/HandArea';
+import ControlPanel from './components/ControlPanel';
 import './App.css';
 
 function App() {
@@ -117,7 +118,11 @@ function App() {
   return (
     <div className="app">
       <h1>麻雀アプリ</h1>
-      <button onClick={dealTiles}>配牌</button>
+      <ControlPanel
+        onDeal={dealTiles}
+        onDraw={drawTile}
+        isDrawDisabled={playerState.hand.length + (playerState.drawnTile ? 1 : 0) >= 14}
+      />
       <p>山の残り枚数: {deck.length}</p>
       <HandArea
         hand={playerState.hand}
@@ -125,12 +130,6 @@ function App() {
         selectedIndex={playerState.selectedIndex}
         onTileClick={handleTileClick}
       />
-
-      <button 
-        onClick={drawTile} 
-        disabled={playerState.hand.length >= 14 || playerState.drawnTile !== null}>
-        ツモ
-      </button>
 
       {/* ▼ここに捨て牌を表示 */}
       <div className="discarded">
