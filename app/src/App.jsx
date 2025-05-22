@@ -73,7 +73,7 @@ function App() {
     // 牌クリック処理
     const handleTileClick = (index) => {
       // 打牌制限
-      //if (playerState.hand.length + (playerState.drawnTile ? 1 : 0) <= 13) return;
+      if (playerState.hand.length + (playerState.drawnTile ? 1 : 0) <= 13) return;
 
       if (playerState.selectedIndex === index) {
         const newDiscarded = [...playerState.discarded];
@@ -122,7 +122,7 @@ function App() {
       <ControlPanel
         onDeal={dealTiles}
         onDraw={drawTile}
-        isDrawDisabled={playerState.hand.length + (playerState.drawnTile ? 1 : 0) >= 14}
+        isDrawDisabled={playerState.hand.length + (playerState.drawnTile ? 1 : 0) >= 14 || playerState.hand.length == 0}
       />
       <p>山の残り枚数: {deck.length}</p>
       <HandArea
