@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Tile from './components/Tile';
 import HandArea from './components/HandArea';
 import ControlPanel from './components/ControlPanel';
+import DiscardPile from './components/DiscardPile';
 import './App.css';
 
 function App() {
@@ -132,16 +133,8 @@ function App() {
       />
 
       {/* ▼ここに捨て牌を表示 */}
-      <div className="discarded">
-        <h2>捨て牌</h2>
-        <div className="tiles">
-          {playerState.discarded.map((tile, index) => (
-            <div key={index} className="tile">
-              <img src={`img/${tile}.gif`} alt={tile} />
-            </div>
-          ))}
-        </div>
-      </div>
+      <DiscardPile discarded={playerState.discarded} />
+
     </div>
   );
 }
